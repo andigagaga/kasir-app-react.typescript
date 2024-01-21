@@ -1,0 +1,60 @@
+import React, { useEffect, useState } from "react";
+import { Col, Container, Row } from "react-bootstrap";
+import { Hasil, ListCategories, Menu, NavbarComponents } from "./components";
+import { API_URL } from "./utils/Constants";
+import axios from "axios";
+
+type MenuProps = {
+  id: number;
+  nama: string;
+};
+
+export default function App() {
+  const [menus, setMenus] = useState<MenuProps[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>('Cemilan  ');
+
+  const handleGetMenus = async (category: string | null = null) => {
+    try {
+      const categoryQueryParam = category ? `?category.nama=${category}` : '';
+      const response = await axios.get(`${API_URL}/products${categoryQueryParam}`);
+      setMenus(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleSelectCategory = (category: string) => {
+    setSelectedCategory(category);
+    handleGetMenus(category);
+  };
+
+  useEffect(() => {
+    handleGetMenus();
+  }, []); // Tambahkan dependency array kosong
+
+  return (
+    <div>
+      <NavbarComponents />
+      <div className="mt-3">
+        <Container fluid>
+          <Row>
+            <ListCategories />
+            <Col>
+              <h4>
+                <strong>Daftar Produk</strong>
+              </h4>
+              <hr />
+              <Row>
+                  {menus &&
+                    menus.map((menu) => (
+                      <Menu key={menu.id} menu={menu}/>
+                    ))}
+              </Row>
+            </Col>
+            <Hasil />
+          </Row>
+        </Container>
+      </div>
+    </div>
+  );
+}
